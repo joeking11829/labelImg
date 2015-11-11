@@ -18,8 +18,20 @@ class PascalVocWriter:
             Return a pretty-printed XML string for the Element.
         """
         rough_string = ElementTree.tostring(elem,'utf8')
+
+
+
         reparsed = minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent="\t")
+        # Format xml
+        xmlStr = reparsed.toprettyxml(indent = '', newl = '', encoding = 'utf-8')
+        xmlStr = xmlStr.replace('\t', '').replace('\n', '')
+        data = minidom.parseString(xmlStr)
+        data = minidom.parseString(data.toprettyxml(indent = '\t', newl = '\n', encoding = 'utf-8'))
+        root = data.documentElement
+        #print 'data DOM: {}'.format(data.toprettyxml())
+
+        #return reparsed.toprettyxml(indent="\t")
+        return root
 
     def genXML(self):
         """
@@ -91,13 +103,16 @@ class PascalVocWriter:
     def save(self, targetFile = None):
         root = self.genXML()
         self.appendObjects(root)
+		# Get File path
         out_file = None
         if targetFile is None:
             out_file = open(self.filename + '.xml','w')
         else:
             out_file = open(targetFile, 'w')
 
-        out_file.write(self.prettify(root))
+        #out_file.write(self.prettify(root))
+        root = self.prettify(root)
+        root.writexml(out_file)
         out_file.close()
 
 """
