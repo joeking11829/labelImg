@@ -23,7 +23,15 @@ from colorDialog import ColorDialog
 from labelFile import LabelFile, LabelFileError
 from toolBar import ToolBar
 
+import datetime
+import random
+
+
 __appname__ = 'labelImg'
+
+# Define Global Variable
+ROOT_DIR = os.path.split(os.path.realpath(__file__))[0]
+DATASET_NAME = 'HandDataset'
 
 ### Utility functions and classes.
 
@@ -96,11 +104,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock.setObjectName(u'Labels')
         self.dock.setWidget(self.labelListContainer)
 
-        self.zoomWidget = ZoomWidget()
+        #self.zoomWidget = ZoomWidget()
         self.colorDialog = ColorDialog(parent=self)
 
         self.canvas = Canvas()
-        self.canvas.zoomRequest.connect(self.zoomRequest)
+        #self.canvas.zoomRequest.connect(self.zoomRequest)
 
         scroll = QScrollArea()
         scroll.setWidget(self.canvas)
@@ -138,11 +146,11 @@ class MainWindow(QMainWindow, WindowMixin):
         openNextImg = action('&Next Image', self.openNextImg,
                 'n', 'next', u'Open Next')
 
-        save = action('&Save', self.saveFile,
-                'Ctrl+S', 'save', u'Save labels to file', enabled=False)
-        saveAs = action('&Save As', self.saveFileAs,
-                'Ctrl+Shift+S', 'save-as', u'Save labels to a different file',
-                enabled=False)
+        #save = action('&Save', self.saveFile,
+        #        'Ctrl+S', 'save', u'Save labels to file', enabled=False)
+        #saveAs = action('&Save As', self.saveFileAs,
+        #        'Ctrl+Shift+S', 'save-as', u'Save labels to a different file',
+        #        enabled=False)
         close = action('&Close', self.closeFile,
                 'Ctrl+W', 'close', u'Close current file')
         color1 = action('Box &Line Color', self.chooseColor1,
@@ -176,7 +184,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         help = action('&Tutorial', self.tutorial, 'Ctrl+T', 'help',
                 u'Show demos')
-
+        
+        """
         zoom = QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
         self.zoomWidget.setWhatsThis(
@@ -199,13 +208,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 checkable=True, enabled=False)
         # Group zoom controls into a list for easier toggling.
         zoomActions = (self.zoomWidget, zoomIn, zoomOut, zoomOrg, fitWindow, fitWidth)
-        self.zoomMode = self.MANUAL_ZOOM
+        self.z to imageoomMode = self.MANUAL_ZOOM
         self.scalers = {
             self.FIT_WINDOW: self.scaleFitWindow,
             self.FIT_WIDTH: self.scaleFitWidth,
             # Set to one to scale to 100% when loading files.
             self.MANUAL_ZOOM: lambda: 1,
         }
+        """
 
         edit = action('&Edit Label', self.editLabel,
                 'Ctrl+E', 'edit', u'Modify the label of the selected Box',
@@ -230,22 +240,26 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.customContextMenuRequested.connect(self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
+        self.actions = struct(#save=save, saveAs=saveAs, 
+                open=open, close=close,
                 lineColor=color1, fillColor=color2,
                 create=create, delete=delete, edit=edit, copy=copy,
                 createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                 shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
-                zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
-                fitWindow=fitWindow, fitWidth=fitWidth,
-                zoomActions=zoomActions,
-                fileMenuActions=(open,opendir,save,saveAs,close,quit),
+                #zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
+                #fitWindow=fitWindow, fitWidth=fitWidth,
+                #zoomActions=zoomActions,
+                fileMenuActions=(open,opendir,
+                    #save,saveAs,
+                    close,quit),
                 beginner=(), advanced=(),
                 editMenu=(edit, copy, delete, None, color1, color2),
                 beginnerContext=(create, edit, copy, delete),
                 advancedContext=(createMode, editMode, edit, copy,
                     delete, shapeLineColor, shapeFillColor),
                 onLoadActive=(close, create, createMode, editMode),
-                onShapesPresent=(saveAs, hideAll, showAll))
+                onShapesPresent=( #saveAs, 
+                    hideAll, showAll))
 
         self.menus = struct(
                 file=self.menu('&File'),
@@ -256,13 +270,16 @@ class MainWindow(QMainWindow, WindowMixin):
                 labelList=labelMenu)
 
         addActions(self.menus.file,
-                (open, opendir,changeSavedir, self.menus.recentFiles, save, saveAs, close, None, quit))
+                (open, opendir,changeSavedir, self.menus.recentFiles, 
+                    #save, saveAs, 
+                    close, None, quit))
         addActions(self.menus.help, (help,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
             hideAll, showAll, None,
-            zoomIn, zoomOut, zoomOrg, None,
-            fitWindow, fitWidth))
+            #zoomIn, zoomOut, zoomOrg, None,
+            #fitWindow, fitWidth
+            ))
 
         self.menus.file.aboutToShow.connect(self.updateFileMenu)
 
@@ -274,11 +291,16 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, save, None, create, copy, delete, None,
-            zoomIn, zoom, zoomOut, fitWindow, fitWidth)
+            open, opendir, openNextImg, 
+            #save, 
+            None, create, copy, delete, None,
+            #zoomIn, zoom, zoomOut, fitWindow, fitWidth
+            )
 
         self.actions.advanced = (
-            open, save, None,
+            open, 
+            #save, 
+            None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -333,13 +355,28 @@ class MainWindow(QMainWindow, WindowMixin):
         self.queueEvent(partial(self.loadFile, self.filename))
 
         # Callbacks:
-        self.zoomWidget.valueChanged.connect(self.paintCanvas)
+        #self.zoomWidget.valueChanged.connect(self.paintCanvas)
 
         self.populateModeActions()
 
         #self.firstStart = True
         #if self.firstStart:
         #    QWhatsThis.enterWhatsThisMode()
+
+        # Create file output path
+        print 'Create output file path'
+        self._output_annotation_path = os.path.join(ROOT_DIR, 'output', DATASET_NAME, 'Annotations')
+        if not os.path.exists(self._output_annotation_path):
+            os.makedirs(self._output_annotation_path)
+        self._output_image_path = os.path.join(ROOT_DIR, 'output', DATASET_NAME, 'JPEGImages')
+        if not os.path.exists(self._output_image_path):
+            os.makedirs(self._output_image_path)
+        self._output_filelist_path = os.path.join(ROOT_DIR, 'output', DATASET_NAME, 'ImageSets', 'Main')
+        if not os.path.exists(self._output_filelist_path):
+            os.makedirs(self._output_filelist_path)
+
+
+
 
     ## Support Functions ##
 
@@ -382,11 +419,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def setDirty(self):
         self.dirty = True
-        self.actions.save.setEnabled(True)
+        #self.actions.save.setEnabled(True)
 
     def setClean(self):
         self.dirty = False
-        self.actions.save.setEnabled(False)
+        #self.actions.save.setEnabled(False)
         self.actions.create.setEnabled(True)
 
     def toggleActions(self, value=True):
@@ -550,7 +587,8 @@ class MainWindow(QMainWindow, WindowMixin):
         try:
             if self.usingPascalVocFormat is True:
                 print 'savePascalVocFormat save to:' + filename
-                lf.savePascalVocFormat(filename, shapes, unicode(self.filename), self.imageData,
+                #self.output_image_filename
+                lf.savePascalVocFormat(filename, shapes, unicode(self.output_image_filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
                 lf.save(filename, shapes, unicode(self.filename), self.imageData,
@@ -672,15 +710,32 @@ class MainWindow(QMainWindow, WindowMixin):
             self.status("Loaded %s" % os.path.basename(unicode(filename)))
             self.image = image
             self.filename = filename
-            self.canvas.loadPixmap(QPixmap.fromImage(image))
+            
+            # Resize Image
+            image_pixmap = QPixmap.fromImage(image)
+            # Scale to 500
+            #print 'image_pixmap.width: {} image_pixmap.height: {}'.format(image_pixmap.width(), image_pixmap.height())
+            if image_pixmap.width() > 500 or image_pixmap.height() > 500:
+                if image_pixmap.width() > image_pixmap.height():
+                    #print 'Scale to Width !!'
+                    image_pixmap = image_pixmap.scaledToWidth(500)
+                else:
+                    #print 'Scale to Height !!'
+                    image_pixmap = image_pixmap.scaledToHeight(500)
+
+            #self.canvas.loadPixmap(QPixmap.fromImage(image))
+            self.resized_image_pixmap = image_pixmap
+            self.canvas.loadPixmap(image_pixmap)
+
+
             if self.labelFile:
                 self.loadLabels(self.labelFile.shapes)
             self.setClean()
             self.canvas.setEnabled(True)
-            self.adjustScale(initial=True)
+            #self.adjustScale(initial=True)
             self.paintCanvas()
             self.addRecentFile(self.filename)
-            self.toggleActions(True)
+            #self.toggleActions(True)
             return True
         return False
 
@@ -692,8 +747,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def paintCanvas(self):
         assert not self.image.isNull(), "cannot paint null image"
-        self.canvas.scale = 0.01 * self.zoomWidget.value()
-        self.canvas.adjustSize()
+        #self.canvas.scale = 0.01 * self.zoomWidget.value()
+        #self.canvas.adjustSize()
         self.canvas.update()
 
     def adjustScale(self, initial=False):
@@ -782,16 +837,75 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.dirname = dirpath
         self.mImgList = self.scanAllImages(dirpath)
-        self.openNextImg()
+        self.openNextImg(True)
 
-    def openNextImg(self, _value=False):
-        if not self.mayContinue():
-            return
+    def openNextImg(self, saveAutoFlag=False, _value=False):
+        
+        # Auto Generate File for Training
+        # call saveAutoGenFile
+        print 'saveAuto: {}'.format(saveAutoFlag)
+        if saveAutoFlag is False:
+            self.saveAutoGenFile()
+
+        #if not self.mayContinue():
+        #    return
         if len(self.mImgList) <= 0:
+            self.errorMessage(u'Reach Last Element, Program Terminated !!',
+                u'Please manually start this pogram for next dataset.')
+            #Terminate Program
+            sys.exit()
             return
+        
+        #print mImgList
+        #print 'mImgList: {}'.format(self.mImgList)
+        #print 'last element in mImgList: {}'.format(self.mImgList[-1])
         filename = self.mImgList.pop(0)
+        print 'mImgList len: {}, elements: {}'.format(len(self.mImgList), self.mImgList)
+        
         if filename:
             self.loadFile(filename)
+    
+    def saveAutoGenFile(self):
+        assert not self.image.isNull(), "cannot save empty image"
+        #print 'FilName: {}'.format((self.filename).encode('utf-8').strip())
+        print 'imgFileName: {}'.format(os.path.basename((self.filename).encode('utf-8').strip()))
+        #print 'savedFiledName: {}'.format(os.path.splitext((self.filename).encode('utf-8').strip()))
+        if self.hasLabels() or False:
+            #Auto Generate Training Files
+            # 0. Generate Unique Name
+            nowTime = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            randomNum = random.randint(0, 1000)
+            uniqueName = str(nowTime) + str(randomNum)
+            output_filename = os.path.splitext(os.path.basename((self.filename)))[0]
+            output_filename = output_filename + '_' + uniqueName
+            
+            # 1. Resized Image File
+            output_image_filename = os.path.join(self._output_image_path, output_filename + '.jpg')
+            print 'save Resized Image file to {}'.format(output_image_filename.encode('utf-8').strip())
+            output_qfile = QFile(unicode(output_image_filename))
+            output_qfile.open(QIODevice.WriteOnly)
+            self.resized_image_pixmap.save(output_qfile, 'JPG')
+            self.output_image_filename = output_image_filename
+ 
+
+            # 2. Annotation File
+            #if filename and self.saveLabels(filename):
+            output_annotation_filename = os.path.join(self._output_annotation_path, output_filename + '.xml')
+            print 'save Annotation file to {}'.format(output_annotation_filename.encode('utf-8').strip())
+            self.saveLabels(output_annotation_filename.encode('utf-8').strip())
+
+                    
+            # 3. Append Image FileName to List
+            output_filelist_filename = os.path.join(self._output_filelist_path, 'trainval.txt')
+            print 'save Image FileList file to {}'.format(output_filelist_filename.encode('utf-8').strip())
+            print 'Append Text: {}'.format((os.path.splitext(os.path.basename(self.filename))[0]).encode('utf-8').strip())
+            with open(output_filelist_filename, 'a+') as f:
+                f.write((os.path.splitext(os.path.basename((self.filename)))[0]).encode('utf-8').strip())
+                f.write('\n')
+
+        else:
+            print 'There is no Labels for image: {}'.format(os.path.basename((self.filename).encode('utf-8').strip()))
+
 
     def openFile(self, _value=False):
         if not self.mayContinue():
@@ -851,7 +965,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
         self.resetState()
         self.setClean()
-        self.toggleActions(False)
+        #self.toggleActions(False)
         self.canvas.setEnabled(False)
         self.actions.saveAs.setEnabled(False)
 

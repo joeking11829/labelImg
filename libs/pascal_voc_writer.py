@@ -3,6 +3,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from xml.dom import minidom
 from lxml import etree
+import codecs
 
 class PascalVocWriter:
     def __init__(self, foldername, filename, imgSize, databaseSrc='Unknown', localImgPath=None):
@@ -17,9 +18,9 @@ class PascalVocWriter:
         """
             Return a pretty-printed XML string for the Element.
         """
-        rough_string = ElementTree.tostring(elem,'utf8')
+        rough_string = ElementTree.tostring(elem,'utf-8')
 
-
+        print 'xml content: {}'.format(rough_string)
 
         reparsed = minidom.parseString(rough_string)
         # Format xml
@@ -106,9 +107,9 @@ class PascalVocWriter:
 		# Get File path
         out_file = None
         if targetFile is None:
-            out_file = open(self.filename + '.xml','w')
+            out_file = codecs.open(self.filename + '.xml','w', encoding='utf-8')
         else:
-            out_file = open(targetFile, 'w')
+            out_file = codecs.open(targetFile, 'w', encoding='utf-8')
 
         #out_file.write(self.prettify(root))
         root = self.prettify(root)
