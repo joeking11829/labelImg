@@ -898,9 +898,10 @@ class MainWindow(QMainWindow, WindowMixin):
             # 3. Append Image FileName to List
             output_filelist_filename = os.path.join(self._output_filelist_path, 'trainval.txt')
             print 'save Image FileList file to {}'.format(output_filelist_filename.encode('utf-8').strip())
-            print 'Append Text: {}'.format((os.path.splitext(os.path.basename(self.filename))[0]).encode('utf-8').strip())
+            #print 'Append Text: {}'.format((os.path.splitext(os.path.basename(self.filename))[0]).encode('utf-8').strip())
+            print 'Append Text: {}'.format((os.path.splitext(os.path.basename(output_filename))[0]).encode('utf-8').strip())
             with open(output_filelist_filename, 'a+') as f:
-                f.write((os.path.splitext(os.path.basename((self.filename)))[0]).encode('utf-8').strip())
+                f.write((os.path.splitext(os.path.basename((output_filename)))[0]).encode('utf-8').strip())
                 f.write('\n')
 
         else:
